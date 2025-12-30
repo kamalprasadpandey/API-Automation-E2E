@@ -1,9 +1,5 @@
-name: Run API E2E Tests
-#sets permissions for GitHub Pages deployment
-permissions:
-  contents: write
-  pages: write
-  id-token: write
+name: e2e-tests
+
 on:
   push:
     branches: [ main, master ]
@@ -38,12 +34,10 @@ jobs:
           key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
           restore-keys: |
             ${{ runner.os }}-pip-
-
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; else pip install pytest requests allure-pytest; fi
-
       - name: Run pytest (collect Allure results)
         run: |
           mkdir -p allure-results
@@ -65,23 +59,3 @@ jobs:
         with:
           name: allure-results
           path: allure-results
-
-      # Publish allure-report to GitHub Pages
-      - name: Configure GitHub Pages
-        if: always()
-        uses: actions/configure-pages@v3
-
-      - name: Upload Pages artifact
-        if: always()
-        uses: actions/upload-pages-artifact@v1
-        with:
-          path: ./allure-report
-
-      - name: Deploy to GitHub Pages
-        if: always()
-        uses: actions/deploy-pages@v1
-
-      - name: Show brief summary
-        if: always()
-        run: |
-          echo "Artifacts uploaded: allure-results and allure-report"
