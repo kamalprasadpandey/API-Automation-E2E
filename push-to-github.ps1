@@ -15,6 +15,7 @@ param(
     [string]$RepoName = "API-Automation-E2E",
     [string]$Owner = "kamalprasadpandey",
     [switch]$CreateWithGh,
+    [switch]$CreateWithPat,
     [switch]$UseSsh
 )
 
@@ -74,6 +75,61 @@ if ($CreateWithGh) {
         ExitWithError "gh repo create failed. See message above."
     }
     Write-Host "Repository created and pushed via gh."
+    exit 0
+}
+
+if ($CreateWithPat) {
+    # Prompt securely for a PAT and attempt to create the repo via GitHub REST API, then push using a temporary token-auth remote.
+    Write-Host "Will create repository $Owner/$RepoName using a provided GitHub PAT. Please provide a token with 'repo' scope when prompted."
+    $sec = Read-Host "Enter GitHub Personal Access Token (input will be hidden)" -AsSecureString
+    if (-not $sec) {
+        ExitWithError "No token provided; aborting CreateWithPat flow."
+    }
+    $ptr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($sec)
+    $token = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($ptr)
+    $body = @{ name = $RepoName; private = $false } | ConvertTo-Json
+    try {
+        $resp = Invoke-RestMethod -Headers @{ Authorization = "token $token"; "User-Agent" = "PowerShell" } -Uri "https://api.github.com/user/repos" -Method Post -Body $body -ContentType "application/json"
+        Write-Host "Repository created at: $($resp.html_url)"
+    } catch {
+        $err = $_.Exception.Response
+        if ($err) {
+            $text = (New-Object System.IO.StreamReader($err.GetResponseStream())).ReadToEnd()
+            Write-Host "GitHub API responded: $text"
+            if ($text -match "name already exists") {
+                Write-Host "Repository already exists in this account. Proceeding to set remote and push."
+            } else {
+                Write-Host "Failed to create repo via API; proceeding to attempt push (remote may need to be created manually)."
+            }
+        } else {
+            Write-Host "Unexpected error creating repo: $_"
+        }
+    }
+
+    $remoteAuth = "https://$($token)@github.com/$Owner/$RepoName.git"
+    if (git remote get-url origin 2>$null) {
+        git remote set-url origin $remoteAuth
+        Write-Host "Updated origin to token-auth URL for push."
+    } else {
+        git remote add origin $remoteAuth
+        Write-Host "Added origin token-auth URL for push."
+    }
+
+    Write-Host "Pushing branch 'main' to origin (using token)..."
+    git push -u origin main
+    if ($LASTEXITCODE -ne 0) {
+        # cleanup token
+        Remove-Variable token -ErrorAction SilentlyContinue
+        if ($ptr) { [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+        ExitWithError "Push failed. Inspect the output above."
+    }
+
+    # reset remote to clean URL and clear token from memory
+    $remoteUrl = if ($UseSsh) { "git@github.com:$Owner/$RepoName.git" } else { "https://github.com/$Owner/$RepoName.git" }
+    git remote set-url origin $remoteUrl
+    Remove-Variable token -ErrorAction SilentlyContinue
+    if ($ptr) { [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($ptr) }
+    Write-Host "Push successful. Repo is at: $remoteUrl"
     exit 0
 }
 
