@@ -74,6 +74,8 @@ jobs:
           destination_dir: api-e2e-report
           keep_files: true
 
-      - name: Report summary
+      - name: Github Pages Report summary
         if: github.ref == 'refs/heads/main'
-        run: echo "Report URL- https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY/api-e2e-report/index.html"
+        run: |
+          echo "Allure report for API E2E tests has been deployed to GitHub Pages."
+          echo "You can view the report at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/api-e2e-report/"
