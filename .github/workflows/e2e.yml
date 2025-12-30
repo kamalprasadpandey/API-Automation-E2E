@@ -1,5 +1,9 @@
-name: e2e-tests
-
+name: Run API E2E Tests
+#sets permissions for GitHub Pages deployment
+permissions:
+  contents: write
+  pages: write
+  id-token: write
 on:
   push:
     branches: [ main, master ]
@@ -48,6 +52,13 @@ jobs:
         env:
           API_AUTH_TOKEN: ${{ secrets.API_AUTH_TOKEN }}
 
+      - name: Generate Allure HTML report
+        if: always()
+        run: |
+           wget https://github.com/allure-framework/allure2/releases/download/2.24.0/allure-2.24.0.zip
+           unzip allure-2.24.0.zip
+           ./allure-2.24.0/bin/allure generate --single-file allure-results --clean -o allure-report
+
       - name: Upload Allure results
         if: always()
         uses: actions/upload-artifact@v4
@@ -55,15 +66,22 @@ jobs:
           name: allure-results
           path: allure-results
 
-      - name: Upload pytest junit xml
+      # Publish allure-report to GitHub Pages
+      - name: Configure GitHub Pages
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/configure-pages@v3
+
+      - name: Upload Pages artifact
+        if: always()
+        uses: actions/upload-pages-artifact@v1
         with:
-          name: pytest-results
-          path: pytest-results.xml
+          path: ./allure-report
+
+      - name: Deploy to GitHub Pages
+        if: always()
+        uses: actions/deploy-pages@v1
 
       - name: Show brief summary
         if: always()
         run: |
-          echo "Artifacts uploaded: allure-results and pytest-results.xml"
-
+          echo "Artifacts uploaded: allure-results and allure-report"
