@@ -1,5 +1,0 @@
-allure-python-commons
-requests
-pytest
-allure-pytest
-
