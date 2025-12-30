@@ -65,10 +65,9 @@ jobs:
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: 'gh-pages'
           publish_dir: ./allure-report
           destination_dir: api-e2e-report
-          user_name: github-actions[bot]
-          user_email: github-actions[bot]@users.noreply.github.com
 
       - name: Report summary
         if: always()
