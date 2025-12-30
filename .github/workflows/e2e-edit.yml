@@ -70,8 +70,9 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_branch: 'gh-pages'
-          publish_dir: ${{github.workspace}}/tests/e2e/allure-report
+          publish_dir: ./allure-report
           destination_dir: api-e2e-report
+          keep_files: true
 
       - name: Report summary
         if: github.ref == 'refs/heads/main'
