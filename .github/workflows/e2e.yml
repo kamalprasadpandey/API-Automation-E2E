@@ -59,3 +59,18 @@ jobs:
         with:
           name: API E2E execution allure-report
           path: allure-report
+
+      - name: Deploy report to GitHub  Pages
+        if: github.ref == 'refs/heads/main'
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./allure-report
+          destination_dir: api-e2e-report
+          user_name: github-actions[bot]
+          user_email: github-actions[bot]@users.noreply.github.com
+
+      - name: Report summary
+        if: always()
+        run: |
+          echo "Report URL: https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY/api-e2e-report/index.html"
