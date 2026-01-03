@@ -65,7 +65,7 @@ jobs:
           path: allure-report
 
       - name: Report summary
-        if: always() && github.ref == 'refs/heads/main'
+        if: always()
         run: echo "Report URL- https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY/api-e2e-report/index.html"
 
       - name: Deploy report to GitHub  Pages
