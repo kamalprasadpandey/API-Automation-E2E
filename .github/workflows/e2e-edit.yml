@@ -75,7 +75,7 @@ jobs:
           keep_files: true
 
       - name: Github Pages Report summary
-        if: github.ref == 'refs/heads/main'
+        if: always()
         run: |
           echo "Allure report for API E2E tests has been deployed to GitHub Pages."
           echo "You can view the report at: https://${{ github.repository_owner }}.github.io/${{ github.repository }}/api-e2e-report/"

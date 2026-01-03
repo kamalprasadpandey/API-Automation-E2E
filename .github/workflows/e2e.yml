@@ -74,5 +74,5 @@ jobs:
           destination_dir: api-e2e-report
 
       - name: Report summary
-        if: github.ref == 'refs/heads/main'
+        if: always() && github.ref == 'refs/heads/main'
         run: echo "Report URL- https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY/api-e2e-report/index.html"
