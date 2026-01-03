@@ -73,7 +73,8 @@ jobs:
           publish_dir: ./allure-report
           destination_dir: api-e2e-report
 
-      - name: Allure Report summary
+      - name: Github Pages report URL
         if: always()
         run: |
-          echo "Report URL- https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY/api-e2e-report/index.html"
+            echo "Report URL: Link not available for pull requests."
+#          echo "Report URL- https://$GITHUB_REPOSITORY_OWNER.github.io/$GITHUB_REPOSITORY/api-e2e-report/index.html"
